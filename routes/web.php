@@ -70,6 +70,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/help', [HelpController::class, 'index'])->name('help');
 });
 
+    use App\Http\Controllers\BiodataController; // <--- Jangan lupa import
+
+Route::middleware('auth')->group(function () {
+    // ... route lain ...
+    
+    // MENU BIODATA (BARU)
+    Route::get('/biodata', [BiodataController::class, 'index'])->name('biodata');
+    Route::patch('/biodata', [BiodataController::class, 'update'])->name('biodata.update');
+});
+
 // --- 4. AREA ADMIN (KHUSUS ROLE ADMIN) ---
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     

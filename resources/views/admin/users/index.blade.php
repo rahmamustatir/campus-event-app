@@ -34,33 +34,94 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white/50 rounded-lg">
-                        <thead>
-                            <tr class="bg-gray-100/80 text-left uppercase text-sm text-gray-700">
-                                <th class="py-3 px-4 border-b">Nama</th>
-                                <th class="py-3 px-4 border-b">Email</th>
-                                <th class="py-3 px-4 border-b">Bergabung Sejak</th>
-                                <th class="py-3 px-4 border-b text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($users as $user)
-                                <tr class="hover:bg-white/80 border-b transition">
-                                    <td class="py-3 px-4 font-bold text-gray-800">{{ $user->name }}</td>
-                                    <td class="py-3 px-4 text-gray-600">{{ $user->email }}</td>
-                                    <td class="py-3 px-4 text-sm">{{ $user->created_at->format('d M Y') }}</td>
-                                    <td class="py-3 px-4 text-center">
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Hapus user ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-3 py-1 rounded hover:bg-red-100 transition">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nama Mahasiswa
+                </th>
+                
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    NIM
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Jurusan
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    No. HP (WA)
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Aksi
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            @forelse($users as $user)
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="h-10 w-10 rounded-full bg-gray-200" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random" alt="">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                <div class="text-xs text-gray-500">Joined: {{ $user->created_at->format('d M Y') }}</div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        @if($user->nim)
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                {{ $user->nim }}
+                            </span>
+                        @else
+                            <span class="text-gray-400 italic">- Kosong -</span>
+                        @endif
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {{ $user->jurusan ?? '-' }}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        @if($user->no_hp)
+                            <div class="flex items-center text-green-600">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
+                                {{ $user->no_hp }}
+                            </div>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ $user->email }}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus mahasiswa ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:text-red-900 font-bold bg-red-100 hover:bg-red-200 px-3 py-1 rounded-md transition">
+                                Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        Belum ada data mahasiswa.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 
             </div>
         </div>

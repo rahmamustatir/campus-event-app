@@ -1,19 +1,25 @@
 @php
     // Cek Role User untuk menentukan Tema Navbar
-    $isAdmin = Auth::user()->role === 'admin';
+    // Jika role tidak ada di database (user lama), anggap 'user' biasa
+    $userRole = Auth::user()->role ?? 'user';
+    $isAdmin = $userRole === 'admin';
     
-    // TEMA ADMIN (Terang/Putih)
+    // TEMA WARNA
+    // Admin: Putih (Profesional)
+    // User: Dark Navy (Sesuai tema Neon Dashboard)
     $navClass = $isAdmin ? 'bg-white border-b border-gray-100' : 'bg-[#0f172a] border-b border-gray-800 shadow-lg';
     $textLogo = $isAdmin ? 'text-blue-600' : 'text-blue-400';
     $textEvent = $isAdmin ? 'text-gray-800' : 'text-white';
+    $hamburgerClass = $isAdmin ? 'text-gray-400 hover:text-gray-500 hover:bg-gray-100' : 'text-gray-200 hover:text-white hover:bg-gray-800';
     
-    // Warna Link Menu (Normal vs Active)
-    // Kita pakai logic manual sedikit untuk class-nya agar fleksibel
+    // STYLE LINK MENU
+    // Admin: Style Standar Laravel (Garis Bawah)
+    // User: Style Tombol/Pill Modern
     $linkClassAdmin = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ";
     $linkClassUser  = "inline-flex items-center px-3 py-2 rounded-md text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ";
 @endphp
 
-<nav x-data="{ open: false }" class="{{ $navClass }} transition-colors duration-300">
+<nav x-data="{ open: false }" class="{{ $navClass }} transition-colors duration-300" style="font-family: 'Poppins', sans-serif;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
@@ -66,14 +72,19 @@
                         </a>
 
                         <a href="{{ route('history') }}" 
-   class="{{ $linkClassUser }} {{ request()->routeIs('history') ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-300 hover:text-white hover:bg-gray-800' }}">
-   📜 Riwayat
-</a>
+                           class="{{ $linkClassUser }} {{ request()->routeIs('history') ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-300 hover:text-white hover:bg-gray-800' }}">
+                           📜 Riwayat
+                        </a>
+
+                        <a href="{{ route('biodata') }}" 
+                           class="{{ $linkClassUser }} {{ request()->routeIs('biodata') ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-300 hover:text-white hover:bg-gray-800' }}">
+                           👤 Biodata
+                        </a>
 
                         <a href="{{ route('help') }}" 
-   class="{{ $linkClassUser }} {{ request()->routeIs('help') ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-300 hover:text-white hover:bg-gray-800' }}">
-   ❓ Bantuan
-</a>
+                           class="{{ $linkClassUser }} {{ request()->routeIs('help') ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-300 hover:text-white hover:bg-gray-800' }}">
+                           ❓ Bantuan
+                        </a>
                     @endif
 
                 </div>
@@ -93,9 +104,16 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @if(!$isAdmin)
+                            <x-dropdown-link :href="route('biodata')">
+                                {{ __('Biodata Diri') }}
+                            </x-dropdown-link>
+                        @endif
+
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profile Akun') }}
                         </x-dropdown-link>
+
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
@@ -108,7 +126,7 @@
             </div>
 
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md {{ $isAdmin ? 'text-gray-400 hover:text-gray-500 hover:bg-gray-100' : 'text-gray-200 hover:text-white hover:bg-gray-800' }} focus:outline-none transition duration-150 ease-in-out">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md {{ $hamburgerClass }} focus:outline-none transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -141,10 +159,16 @@
                 <x-responsive-nav-link href="/#events">
                     🔍 {{ __('Jelajah Event') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link href="#">
+                
+                <x-responsive-nav-link :href="route('history')" :active="request()->routeIs('history')">
                     📜 {{ __('Riwayat') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link href="#">
+                
+                <x-responsive-nav-link :href="route('biodata')" :active="request()->routeIs('biodata')">
+                    👤 {{ __('Biodata') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('help')" :active="request()->routeIs('help')">
                     ❓ {{ __('Bantuan') }}
                 </x-responsive-nav-link>
             @endif
