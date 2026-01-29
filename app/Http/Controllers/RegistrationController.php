@@ -2,149 +2,89 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use App\Models\Registration;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Mail; // Import Mail
-use App\Mail\RegistrationSuccess;    // Import Class Mail kita
-use Illuminate\Support\Facades\Http; // Import Http untuk WA
+use App\Models\Registration;
+use App\Models\Event;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf; // Jika nanti pakai PDF
 
 class RegistrationController extends Controller
 {
-    /**
-     * MAHASISWA: Proses Mendaftar Event
-     */
-    public function store(Request $request, $eventId)
+    // 1. PROSES DAFTAR EVENT
+    public function store(Request $request, $id)
     {
-        $event = Event::findOrFail($eventId);
-        $user = auth()->user();
+        $event = Event::findOrFail($id);
 
-        // 1. CEK DUPLIKASI
-        $existing = Registration::where('user_id', $user->id)
-            ->where('event_id', $event->id)
-            ->exists();
+        // Cek apakah sudah daftar?
+        $existing = Registration::where('user_id', Auth::id())
+                                ->where('event_id', $id)
+                                ->first();
 
         if ($existing) {
-            if ($request->wantsJson()) {
-                return response()->json(['status' => 'error', 'message' => 'Gagal: Anda sudah terdaftar!'], 409);
-            }
             return back()->with('error', 'Anda sudah terdaftar di event ini!');
         }
 
-        // 2. CEK KUOTA
+        // Cek Kuota
         if ($event->sisaKuota() <= 0) {
-            if ($request->wantsJson()) {
-                return response()->json(['status' => 'error', 'message' => 'Gagal: Mohon maaf, kuota penuh!'], 400);
-            }
-            return back()->with('error', 'Kuota event sudah penuh!');
+            return back()->with('error', 'Maaf, kuota event ini sudah penuh.');
         }
 
-        // 3. PROSES SIMPAN
-        $ticketCode = 'EVT-' . $event->id . '-' . strtoupper(Str::random(6));
-
-        $reg = Registration::create([
-            'user_id' => $user->id,
-            'event_id' => $event->id,
-            'ticket_code' => $ticketCode,
-            'status' => 'registered',
+        // Simpan Pendaftaran
+        Registration::create([
+            'user_id' => Auth::id(),
+            'event_id' => $id,
+            'status' => 'confirmed', // Langsung konfirmasi
         ]);
 
-        // --- MULAI LOGIC NOTIFIKASI ---
-        
-        // A. KIRIM EMAIL (Dibungkus try-catch)
-        try {
-            // Pastikan Anda sudah setting .env (MAIL_MAILER=log atau smtp)
-            Mail::to($user->email)->send(new RegistrationSuccess($reg));
-        } catch (\Exception $e) {
-            \Log::error('Gagal kirim email: ' . $e->getMessage());
-        }
-
-        // B. KIRIM WHATSAPP (Opsional - Kode disiapkan tapi dimatikan dulu)
-        /*
-        try {
-            $token = 'TOKEN_FONNTE_ANDA'; 
-            $message = "Halo {$user->name}, pendaftaran {$event->title} berhasil! Kode Tiket: {$ticketCode}";
-            
-            Http::withHeaders(['Authorization' => $token])
-                ->post('https://api.fonnte.com/send', [
-                    'target' => $user->phone ?? '08123456789', 
-                    'message' => $message,
-                ]);
-        } catch (\Exception $e) {
-             \Log::error('Gagal kirim WA: ' . $e->getMessage());
-        }
-        */
-
-        // 4. RESPON SUKSES
-        if ($request->wantsJson()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Pendaftaran Berhasil!',
-                'ticket_code' => $ticketCode,
-                'data' => $reg
-            ], 201);
-        }
-
-        return redirect()->route('dashboard')->with('success', 'Pendaftaran Berhasil! Silakan cek email Anda.');
+        return redirect()->route('history')->with('success', 'Hore! Pendaftaran berhasil.');
     }
 
-    /**
-     * ADMIN: Proses Scan QR Code (API)
-     */
-    public function checkInApi(Request $request)
+    // 2. HALAMAN RIWAYAT SAYA (INI YANG TADI EROR)
+    public function history()
     {
-        $request->validate(['ticket_code' => 'required']);
-        $code = $request->ticket_code;
+        // Ambil semua pendaftaran milik user yang sedang login
+        $registrations = Registration::with('event')
+                                     ->where('user_id', Auth::id())
+                                     ->latest()
+                                     ->get();
 
-        $registration = Registration::with(['user', 'event'])
-                        ->where('ticket_code', $code)
-                        ->first();
-
-        if (!$registration) {
-            return response()->json(['status' => 'error', 'message' => 'Tiket Tidak Valid / Tidak Ditemukan!'], 404);
-        }
-
-        if ($registration->status === 'attended') {
-            return response()->json([
-                'status' => 'warning',
-                'message' => 'PERINGATAN: Peserta SUDAH Check-in sebelumnya!',
-                'participant_name' => $registration->user->name
-            ]); 
-        }
-
-        $registration->update([
-            'status' => 'attended',
-            'checked_in_at' => now(),
-            'checked_in_by' => auth()->id(),
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Check-in Berhasil!',
-            'participant_name' => $registration->user->name,
-            'participant_nim' => $registration->user->nim,
-            'event_title' => $registration->event->title
-        ]);
+        return view('history', compact('registrations'));
     }
 
-    /**
-     * FITUR: Download PDF
-     */
-    public function downloadPdf($id)
+    // 3. DOWNLOAD TIKET
+    public function downloadTicket($id)
     {
-        $registration = Registration::with(['event', 'user'])->findOrFail($id);
+        $registration = Registration::with(['user', 'event'])->findOrFail($id);
 
-        if ($registration->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak berhak mengunduh tiket ini.');
+        // Pastikan yang download adalah pemilik tiket atau admin
+        if (Auth::id() !== $registration->user_id && Auth::user()->usertype !== 'admin') {
+            abort(403);
         }
 
-        // Generate PDF dengan Opsi Remote Enabled
-        $pdf = Pdf::setOption(['isRemoteEnabled' => true])
-                    ->setOption(['defaultFont' => 'sans-serif'])
-                    ->loadView('pdf.ticket', compact('registration'));
+        // Tampilan Tiket Sederhana (Print View)
+        return view('pdf.ticket', compact('registration'));
+    }
 
-        return $pdf->download('Tiket-' . $registration->ticket_code . '.pdf');
+    // --- BAGIAN ADMIN ---
+
+    // 4. ADMIN HAPUS PESERTA
+    public function destroy($id)
+    {
+        $registration = Registration::findOrFail($id);
+        $registration->delete();
+        return back()->with('success', 'Peserta berhasil dihapus.');
+    }
+
+    // 5. ADMIN SCAN (INDEX)
+    public function scanIndex()
+    {
+        return view('admin.scan');
+    }
+
+    // 6. ADMIN PROSES SCAN
+    public function processScan(Request $request)
+    {
+        // Logika scan nanti bisa ditambahkan di sini
+        return back()->with('success', 'Scan berhasil (Simulasi).');
     }
 }
