@@ -1,91 +1,126 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-white leading-tight">
-                {{ __('Tambah Event Baru') }}
-            </h2>
-            <a href="{{ route('admin.events.index') }}" class="text-gray-300 hover:text-white text-sm flex items-center gap-1">
-                &larr; Batal & Kembali
-            </a>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Buat Event Baru') }}
+        </h2>
     </x-slot>
 
-    <div class="py-12 bg-gray-900 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-8">
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
                     
-                    @if ($errors->any())
-                        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                            <strong class="font-bold">Oops! Ada kesalahan:</strong>
-                            <ul class="mt-2 list-disc list-inside text-sm">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('admin.events.store') }}" method="POST">
+                    <form action="{{ route('admin.events.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Nama Event</label>
-                            <input type="text" name="title" value="{{ old('title') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Contoh: Seminar AI 2026" required>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Judul Event</label>
+                            <input type="text" name="title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Contoh: Seminar Teknologi 2026">
+                        </div>
+
+                        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Target Peserta Event</label>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <select name="kategori_peserta" id="kategori_select" onchange="cekKategori()"
+                                        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                        <option value="umum">🌍 Untuk Umum (Semua Mahasiswa)</option>
+                                        <option value="fakultas">🏢 Fakultas Tertentu</option>
+                                    </select>
+                                </div>
+
+                                <div id="target_input_box" style="display: none;">
+                                    <select name="target_peserta" id="target_input"
+                                        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                        <option value="" disabled selected>-- Pilih Nama Fakultas --</option>
+                                        
+                                        <option value="Fastek">Fastek</option>
+                                        <option value="FP3">FP3</option>
+                                        <option value="FEB">FEB</option>
+                                        <option value="FKIP">FKIP</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Kategori (Opsional)</label>
-                            <input type="text" name="category" value="{{ old('category') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Contoh: Teknologi / Workshop">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Lengkap</label>
-                            <textarea name="description" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>{{ old('description') }}</textarea>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Singkat</label>
+                            <textarea name="description" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Pelaksanaan</label>
-                                <input type="date" name="date" value="{{ old('date') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                <input type="date" name="date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Jam Mulai</label>
-                                <input type="time" name="time" value="{{ old('time') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                <input type="time" name="time" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Lokasi Acara</label>
-                            <input type="text" name="location" value="{{ old('location') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Contoh: Aula Gedung E" required>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Lokasi / Tempat</label>
+                            <input type="text" name="location" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Contoh: Aula Utama Lt. 3">
                         </div>
 
-                        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <label class="block text-blue-800 text-sm font-bold mb-2">Batas Kuota Peserta</label>
-                            <input type="number" 
-                                   name="quota" 
-                                   value="{{ old('quota') }}" 
-                                   placeholder="Contoh: 100 (Isi angka 0 untuk Tanpa Batas)" 
-                                   class="shadow appearance-none border border-blue-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-200" 
-                                   required>
-                            <p class="text-blue-600 text-xs italic mt-2">
-                                ℹ️ Isi dengan angka <strong>0</strong> jika event ini <strong>Tanpa Batas (Unlimited)</strong>.
-                            </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Kuota Peserta (Orang)</label>
+                                <input type="number" name="quota" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Harga Tiket (Rp)</label>
+                                <input type="number" name="price" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="0" required>
+                                <p class="text-xs text-gray-500 mt-1">*Isi 0 jika Gratis</p>
+                            </div>
                         </div>
 
-                        <div class="flex items-center justify-end gap-3">
-                            <a href="{{ route('admin.events.index') }}" class="text-gray-500 hover:text-gray-800 font-bold py-2 px-4 rounded">
+                        <div class="mb-6 border-2 border-dashed border-gray-300 p-4 rounded-lg bg-gray-50 text-center">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Upload Banner Event</label>
+                            <input type="file" name="image" class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100 cursor-pointer"
+                            >
+                            <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG, JPEG. Max: 2MB</p>
+                        </div>
+
+                        <div class="flex items-center justify-end border-t pt-4">
+                            <a href="{{ route('admin.events.index') }}" class="text-gray-600 hover:text-gray-900 font-bold mr-4 text-sm">
                                 Batal
                             </a>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow-lg transform transition hover:-translate-y-1">
-                                Simpan Event
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transform transition hover:scale-105 focus:outline-none focus:shadow-outline">
+                                Simpan Event 💾
                             </button>
                         </div>
 
                     </form>
+
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function cekKategori() {
+            var kategori = document.getElementById("kategori_select").value;
+            var inputBox = document.getElementById("target_input_box");
+            var inputField = document.getElementById("target_input");
+
+            if (kategori === "umum") {
+                // Sembunyikan jika UMUM
+                inputBox.style.display = "none";
+                inputField.value = ""; 
+                inputField.removeAttribute('required');
+            } else {
+                // Munculkan jika FAKULTAS
+                inputBox.style.display = "block";
+                inputField.setAttribute('required', 'required');
+            }
+        }
+    </script>
 </x-app-layout>

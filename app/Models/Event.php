@@ -9,20 +9,37 @@ class Event extends Model
 {
     use HasFactory;
 
-    // Izinkan semua kolom diisi (biar tidak ribet define satu-satu)
-    protected $guarded = ['id'];
+    // 1. DAFTAR KOLOM YANG BOLEH DIISI (Wajib update ini agar fitur baru jalan)
+    protected $fillable = [
+        'title',            // Judul
+        'description',      // Deskripsi
+        'date',             // Tanggal
+        'time',             // Jam
+        'location',         // Lokasi
+        'quota',            // Kuota Total
+        'price',            // Harga
+        'image',            // Banner
+        
+        // --- KOLOM BARU UNTUK FILTER ---
+        'kategori_peserta', // (umum / fakultas / prodi)
+        'target_peserta',   // (Nama fakultas/prodinya)
+    ];
 
-    // Relasi: Satu Event memiliki banyak Pendaftaran
+    // 2. RELASI KE DATA PENDAFTAR (PENTING: Jangan dihapus)
+    // Fungsi ini dipakai Admin untuk melihat siapa saja yang daftar event ini
     public function registrations()
     {
         return $this->hasMany(Registration::class);
     }
 
-    // --- INI FUNGSI YANG TADI HILANG ---
-    // Fungsi untuk menghitung sisa kuota secara otomatis
+    // 3. LOGIKA SISA KUOTA (PENTING: Jangan dihapus)
+    // Fungsi ini dipakai saat Mahasiswa mau daftar. Kalau dihapus, sistem kuota error.
     public function sisaKuota()
     {
-        // Rumus: Kuota Total dikurangi Jumlah Orang yang Sudah Daftar
-        return $this->quota - $this->registrations()->count();
+        // Hitung berapa orang yang sudah daftar (status confirmed)
+        $terdaftar = $this->registrations()->where('status', 'confirmed')->count();
+        
+        // Kembalikan sisa kursi (Total Kuota - Yang Sudah Daftar)
+        return $this->quota - $terdaftar;
     }
 }

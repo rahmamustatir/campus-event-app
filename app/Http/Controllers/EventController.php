@@ -26,58 +26,46 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
-        // =========================================================
-        // 🛠️ AUTO-CLEANER (PEMBERSIH DATABASE - VERSI FINAL)
-        // =========================================================
-        $tableName = 'events';
-
-        Schema::table($tableName, function (Blueprint $table) use ($tableName) {
-            
-            // 1. SIASAT KHUSUS: HAPUS FOREIGN KEY 'created_by' (Biang kerok error 1828)
-            if (Schema::hasColumn($tableName, 'created_by')) {
-                try {
-                    // Coba putus kuncinya dulu
-                    $table->dropForeign('events_created_by_foreign'); 
-                } catch (\Exception $e) {
-                    // Abaikan jika kuncinya sudah tidak ada
-                }
-                // Baru hapus kolomnya
-                $table->dropColumn('created_by');
-            }
-
-            // 2. HAPUS KOLOM LAINNYA
-            $ghostColumns = ['event_date', 'registration_end', 'deleted_at'];
-            foreach ($ghostColumns as $col) {
-                if (Schema::hasColumn($tableName, $col)) {
-                    $table->dropColumn($col);
-                }
-            }
-
-            // 3. PASTIKAN KOLOM WAJIB ADA
-            if (!Schema::hasColumn($tableName, 'slug')) { $table->string('slug')->nullable()->after('title'); }
-            if (!Schema::hasColumn($tableName, 'quota')) { $table->integer('quota')->default(0)->after('location'); }
-            if (!Schema::hasColumn($tableName, 'category')) { $table->string('category')->nullable()->after('title'); }
-        });
-        // =========================================================
-
-
-        // --- PROSES SIMPAN SEPERTI BIASA ---
-        $validated = $request->validate([
-            'title'       => 'required|string|max:255',
+        // 1. VALIDASI DATA
+        $request->validate([
+            'title' => 'required',
             'description' => 'required',
-            'date'        => 'required|date',
-            'time'        => 'required',
-            'location'    => 'required|string',
-            'quota'       => 'required|integer|min:0',
-            'category'    => 'nullable|string',
+            'date' => 'required',
+            'time' => 'required',
+            'location' => 'required',
+            'quota' => 'required|numeric',
+            'price' => 'required|numeric',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi Gambar
+            'kategori_peserta' => 'required', // Kategori Baru
+            'target_peserta' => 'nullable',   // Nama Fakultas Baru
         ]);
 
-        $validated['slug'] = Str::slug($request->title);
+        // 2. PROSES UPLOAD GAMBAR (Ini yang mungkin hilang sebelumnya)
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            // Simpan ke folder 'public/events' dan ambil nama filenya
+            $imagePath = $request->file('image')->store('events', 'public');
+        }
 
-        Event::create($validated);
+        // 3. SIMPAN KE DATABASE
+        \App\Models\Event::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'date' => $request->date,
+            'time' => $request->time,
+            'location' => $request->location,
+            'quota' => $request->quota,
+            'price' => $request->price,
+            
+            // Simpan path gambar yang sudah diupload tadi
+            'image' => $imagePath, 
+            
+            // Simpan Kategori & Fakultas
+            'kategori_peserta' => $request->kategori_peserta,
+            'target_peserta' => $request->target_peserta,
+        ]);
 
-        return redirect()->route('admin.events.index')
-            ->with('success', 'Alhamdulillah! Event berhasil disimpan. Database sudah bersih total.');
+        return redirect()->route('admin.events.index')->with('success', 'Event berhasil dibuat beserta gambarnya!');
     }
 
     public function show(Event $event)

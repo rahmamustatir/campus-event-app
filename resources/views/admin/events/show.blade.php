@@ -2,9 +2,9 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Detail & Peserta Event') }}
+                {{ __('Detail Event: ') }} {{ $event->title }}
             </h2>
-            <a href="{{ route('admin.events.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-600">
+            <a href="{{ route('admin.events.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm">
                 &larr; Kembali
             </a>
         </div>
@@ -13,92 +13,103 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <div class="md:flex md:justify-between md:items-start">
-                        <div class="mb-4 md:mb-0">
-                            <h1 class="text-3xl font-black text-blue-900 mb-2">{{ $event->title }}</h1>
-                            <div class="flex flex-col gap-2 text-sm text-gray-600">
-                                <span class="flex items-center gap-2">
-                                    🗓️ <strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($event->date)->format('d F Y') }}
-                                </span>
-                                <span class="flex items-center gap-2">
-                                    ⏰ <strong>Waktu:</strong> {{ $event->time }} WIB
-                                </span>
-                                <span class="flex items-center gap-2">
-                                    📍 <strong>Lokasi:</strong> {{ $event->location }}
-                                </span>
-                            </div>
-                            <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">
-                                <h3 class="font-bold mb-1">Deskripsi Event:</h3>
-                                <p>{{ $event->description }}</p>
-                            </div>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-col md:flex-row gap-6">
+                <div class="w-full md:w-1/3">
+                    @if($event->image)
+                        <img src="{{ asset('storage/' . $event->image) }}" class="w-full rounded-lg shadow-md object-cover">
+                    @else
+                        <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 font-bold">
+                            No Image
                         </div>
+                    @endif
+                </div>
 
-                        <div class="bg-blue-50 p-5 rounded-xl border border-blue-100 text-center min-w-[200px]">
-                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-widest">Sisa Kuota</h3>
-                            <div class="text-4xl font-black text-blue-600 my-2">
-                                {{ $event->sisaKuota() }}
-                            </div>
-                            <p class="text-xs text-blue-500 font-medium">dari {{ $event->quota }} kursi</p>
+                <div class="w-full md:w-2/3 space-y-4">
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $event->title }}</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Tanggal:</p>
+                            <p class="font-semibold">{{ \Carbon\Carbon::parse($event->date)->format('d F Y') }}</p>
                         </div>
+                        <div>
+                            <p class="text-gray-500">Waktu:</p>
+                            <p class="font-semibold">{{ $event->time }} WIB</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Lokasi:</p>
+                            <p class="font-semibold">{{ $event->location }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Harga Tiket:</p>
+                            <p class="font-semibold text-green-600">
+                                {{ $event->price == 0 ? 'Gratis' : 'Rp ' . number_format($event->price, 0, ',', '.') }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Kuota:</p>
+                            <p class="font-semibold">{{ $event->quota }} Peserta</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Target Peserta:</p>
+                            <span class="px-2 py-1 rounded text-xs font-bold {{ $event->kategori_peserta == 'umum' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ strtoupper($event->target_peserta) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100">
+                        <p class="text-gray-500 mb-1">Deskripsi:</p>
+                        <p class="text-gray-700 leading-relaxed">{{ $event->description }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                        👥 Daftar Peserta Terdaftar
-                        <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">Total: {{ $event->registrations->count() }}</span>
-                    </h3>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h3 class="text-lg font-bold mb-4 border-b pb-2">📋 Peserta Terdaftar ({{ $event->registrations->count() }})</h3>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 border">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-10">No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Mahasiswa</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Waktu Daftar</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($event->registrations as $index => $registration)
-                                <tr>
-                                    <td class="px-6 py-4 text-sm text-gray-500">{{ $index + 1 }}</td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm font-bold text-gray-900">
-                                            {{ $registration->user->name ?? 'User Terhapus' }}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-600">
+                        <thead class="bg-gray-50 uppercase text-xs font-bold">
+                            <tr>
+                                <th class="px-4 py-3">No</th>
+                                <th class="px-4 py-3">Nama Mahasiswa</th>
+                                <th class="px-4 py-3">Email</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Tanggal Daftar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($event->registrations as $index => $reg)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-3 font-medium text-gray-900 flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                                            {{ substr($reg->user->name, 0, 1) }}
                                         </div>
+                                        {{ $reg->user->name }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{ $registration->user->email ?? '-' }}
+                                    <td class="px-4 py-3">{{ $reg->user->email }}</td>
+                                    <td class="px-4 py-3">
+                                        @if($reg->status == 'confirmed')
+                                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Terdaftar</span>
+                                        @elseif($reg->status == 'checked_in')
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Hadir</span>
+                                        @else
+                                            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">{{ $reg->status }}</span>
+                                        @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{ $registration->created_at->format('d M Y, H:i') }} WIB
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                            Terdaftar
-                                        </span>
-                                    </td>
+                                    <td class="px-4 py-3">{{ $reg->created_at->format('d M Y H:i') }}</td>
                                 </tr>
-                                @empty
+                            @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-10 text-center text-gray-400">
-                                        <div class="flex flex-col items-center">
-                                            <span class="text-4xl mb-2">📂</span>
-                                            <span>Belum ada peserta yang mendaftar event ini.</span>
-                                        </div>
+                                    <td colspan="5" class="px-4 py-6 text-center text-gray-400">
+                                        Belum ada peserta yang mendaftar.
                                     </td>
                                 </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

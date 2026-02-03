@@ -36,9 +36,18 @@ class User extends Authenticatable
     }
 
     // --- TAMBAHKAN INI ---
-    // Relasi: User punya banyak Pendaftaran
+   // Relasi ke Biodata
+    public function biodata()
+    {
+        // Pastikan model Biodata ada di folder Models
+        return $this->hasOne(Biodata::class);
+    }
+
+    // Relasi ke Pendaftaran Event
     public function registrations()
     {
-        return $this->hasMany(Registration::class);
+        // Kita pakai alamat lengkap agar pasti ketemu
+        return $this->hasMany(\App\Models\Registration::class);
     }
+
 }
