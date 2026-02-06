@@ -1,12 +1,15 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema; // Tambahan biar route fix database gak error
+use Illuminate\Database\Schema\Blueprint; // Tambahan biar route fix database gak error
 use App\Models\User;
+use App\Models\Event;
 
 // --- CONTROLLERS ---
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\ProfileController;
@@ -14,11 +17,12 @@ use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
-use App\Models\Event;
+use App\Http\Controllers\OtpController; // Controller OTP
+use App\Helpers\WhatsappHelper; // Helper WA
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes (FINAL FIXED - STRUKTUR JABATAN)
+| Web Routes
 |--------------------------------------------------------------------------
 */
 
@@ -39,11 +43,11 @@ Route::post('/logout', function (Request $request) {
 // 3. MENU USER (Dapat Diakses Semua yang Login)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-    // === TAMBAHKAN ROUTE BARU INI ===
-    Route::get('/explore', [App\Http\Controllers\DashboardController::class, 'explore'])->name('explore');
-    Route::post('/registrations', [App\Http\Controllers\RegistrationController::class, 'store'])->name('registrations.store');
+        ->middleware(['auth', 'verified']) // Verified akan kita pakai setelah ini
+        ->name('dashboard');
+
+    Route::get('/explore', [DashboardController::class, 'explore'])->name('explore');
+    Route::post('/registrations', [RegistrationController::class, 'store'])->name('registrations.store');
     
     // Fitur Mahasiswa
     Route::get('/biodata', [BiodataController::class, 'index'])->name('biodata');
@@ -66,11 +70,9 @@ Route::middleware('auth')->group(function () {
 
     // Route untuk melihat Detail User & Riwayat Event
     Route::get('/admin/users/{id}', [UserController::class, 'show'])->name('admin.users.show');
-
 });
 
-// 4. MENU ADMIN (Kita hapus middleware yang bikin error tadi)
-// Cukup kelompokkan biasa. Keamanan akan dihandle oleh Tampilan (Menu hilang kalau bukan admin).
+// 4. MENU ADMIN
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::resource('events', EventController::class);
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -81,135 +83,61 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('/scan', [RegistrationController::class, 'processScan'])->name('scan.process');
 });
 
+// Load Route Auth Bawaan Breeze (Login, Register, dll)
 if (file_exists(__DIR__.'/auth.php')) { require __DIR__.'/auth.php'; }
 
 
+// ==============================================================================
+// 🛠️ ZONE PERBAIKAN & DEBUG (Bisa dihapus nanti kalau web sudah jadi)
+// ==============================================================================
+
+// Route Verifikasi OTP (Hanya bisa diakses kalau sudah login)
+
 Route::get('/fix-roles', function () {
     $log = "<div style='font-family:sans-serif; padding:50px; text-align:center;'><h1>HASIL PERUBAHAN JABATAN:</h1><ul style='list-style:none;'>";
-
-    // 1. TURUNKAN JABATAN: M. Amirul Mustofa -> User
-    // Cari nama yang mirip 'Amirul'
     $amirul = User::where('name', 'LIKE', '%Amirul%')->first();
-    if ($amirul) {
-        $amirul->usertype = 'user'; // Turunkan jadi user biasa
-        $amirul->save();
-        $log .= "<li style='color:red; font-size:18px; margin-bottom:10px;'>⬇️ <b>" . $amirul->name . "</b> sekarang menjadi <b>USER BIASA</b>.</li>";
-    } else {
-        $log .= "<li>⚠️ Akun Amirul tidak ditemukan.</li>";
-    }
-
-    // 2. NAIKKAN JABATAN: Rahma Mustatir -> Admin
+    if ($amirul) { $amirul->usertype = 'user'; $amirul->save(); $log .= "<li>⬇️ <b>" . $amirul->name . "</b> jadi USER.</li>"; }
     $rahma = User::where('name', 'LIKE', '%Rahma%')->first();
-    if ($rahma) {
-        $rahma->usertype = 'admin'; // Naikkan jadi Admin
-        $rahma->save();
-        $log .= "<li style='color:green; font-size:18px; margin-bottom:10px;'>⬆️ <b>" . $rahma->name . "</b> resmi menjadi <b>ADMIN</b>.</li>";
-    } else {
-        $log .= "<li>⚠️ Akun Rahma tidak ditemukan.</li>";
-    }
-
-    // 3. PASTIKAN ADMIN KAMPUS TETAP ADMIN
-    $adminKampus = User::where('name', 'LIKE', '%Admin Kampus%')->orWhere('email', 'LIKE', '%admin%')->first();
-    if ($adminKampus) {
-        $adminKampus->usertype = 'admin';
-        $adminKampus->save();
-        $log .= "<li style='color:green; font-size:18px; margin-bottom:10px;'>⬆️ <b>" . $adminKampus->name . "</b> dipastikan sebagai <b>ADMIN</b>.</li>";
-    }
-
-    $log .= "</ul><br><br><a href='/dashboard' style='background:blue; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-weight:bold;'>Selesai & Cek Dashboard &rarr;</a></div>";
+    if ($rahma) { $rahma->usertype = 'admin'; $rahma->save(); $log .= "<li>⬆️ <b>" . $rahma->name . "</b> jadi ADMIN.</li>"; }
     return $log;
 });
-// ==============================================================================
-// 🔥 OBAT DARURAT: BUAT TABEL PENDAFTARAN (JALANKAN SEKALI SAJA)
-// ==============================================================================
+
+// Fix Registration Table
 Route::get('/fix-registration-table', function () {
-    try {
-        // Cek apakah tabel registrations sudah ada?
-        if (!Schema::hasTable('registrations')) {
-            
-            // Jika belum ada, BUAT SEKARANG
-            Schema::create('registrations', function (Blueprint $table) {
-                $table->id(); // ID Pendaftaran
-                $table->foreignId('user_id'); // ID Mahasiswa
-                $table->foreignId('event_id'); // ID Event
-                $table->string('status')->default('confirmed'); // Status
-                $table->timestamps(); // Tanggal Daftar (created_at & updated_at)
-            });
-
-            return "<div style='text-align:center; padding:50px; font-family:sans-serif;'>
-                        <h1 style='color:green; font-size:40px;'>✅ BERHASIL!</h1>
-                        <p>Tabel <b>'registrations'</b> berhasil dibuat di database.</p>
-                        <br>
-                        <a href='/dashboard' style='background:blue; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Coba Daftar Event Lagi &rarr;</a>
-                    </div>";
-        } else {
-            return "<div style='text-align:center; padding:50px; font-family:sans-serif;'>
-                        <h1 style='color:orange;'>ℹ️ Tabel Sudah Ada</h1>
-                        <p>Tabel registrations sudah ada. Jika masih error, pastikan Anda sudah menyimpan file <b>app/Models/Registration.php</b> dengan benar.</p>
-                    </div>";
-        }
-    } catch (\Exception $e) {
-        return "<h1 style='color:red;'>Error: " . $e->getMessage() . "</h1>";
-    }
-});
-// ==============================================================================
-// 🔥 OBAT KERAS: HAPUS & BUAT ULANG TABEL REGISTRASI (VERSI LENGKAP)
-// ==============================================================================
-Route::get('/reset-registration-table', function () {
-    try {
-        // Hapus Tabel Lama
-        // Kita pakai nama lengkap '\Illuminate\Support\Facades\Schema' biar pasti kenal
-        \Illuminate\Support\Facades\Schema::dropIfExists('registrations');
-
-        // Buat Tabel Baru
-        // Perhatikan bagian dalam kurung: kita pakai nama lengkap Blueprint
-        \Illuminate\Support\Facades\Schema::create('registrations', function (\Illuminate\Database\Schema\Blueprint $table) {
+    if (!Schema::hasTable('registrations')) {
+        Schema::create('registrations', function (Blueprint $table) {
             $table->id();
-            
-            // Kolom User & Event
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('event_id')->constrained()->onDelete('cascade');
-            
-            // Kolom Status & Tanggal
+            $table->foreignId('user_id');
+            $table->foreignId('event_id');
             $table->string('status')->default('confirmed');
             $table->timestamps();
         });
-
-        return "<div style='text-align:center; padding:50px; font-family:sans-serif;'>
-                    <h1 style='color:green; font-size:40px;'>✅ TABEL BERHASIL DI-RESET!</h1>
-                    <p>Tabel <b>'registrations'</b> yang lama sudah dibuang.</p>
-                    <p>Tabel <b>'registrations'</b> yang BARU & SEHAT sudah dibuat.</p>
-                    <hr>
-                    <h3>Sekarang Sistem Siap Digunakan.</h3>
-                    <br>
-                    <a href='/dashboard' style='background:blue; color:white; padding:15px 30px; text-decoration:none; border-radius:8px; font-weight:bold;'>COBA DAFTAR EVENT LAGI &rarr;</a>
-                </div>";
-
-    } catch (\Exception $e) {
-        // Tampilkan error jika masih ada masalah lain
-        return "<div style='text-align:center; padding:50px;'>
-                    <h1 style='color:red;'>MASIH EROR:</h1>
-                    <p>" . $e->getMessage() . "</p>
-                </div>";
+        return "Tabel registrations dibuat.";
     }
+    return "Tabel sudah ada.";
 });
-// ==============================================================================
-// 🔥 UPDATE TABEL EVENT: TAMBAH KOLOM TARGET PESERTA
-// ==============================================================================
+
+// Reset Registration Table
+Route::get('/reset-registration-table', function () {
+    Schema::dropIfExists('registrations');
+    Schema::create('registrations', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        $table->foreignId('event_id')->constrained()->onDelete('cascade');
+        $table->string('status')->default('confirmed');
+        $table->timestamps();
+    });
+    return "Tabel di-reset total.";
+});
+
+// Update Event Table
 Route::get('/update-event-table', function () {
-    try {
-        if (!Schema::hasColumn('events', 'kategori_peserta')) {
-            Schema::table('events', function (\Illuminate\Database\Schema\Blueprint $table) {
-                // Kolom untuk menyimpan: 'umum', 'fakultas', atau 'prodi'
-                $table->string('kategori_peserta')->default('umum')->after('description');
-                
-                // Kolom untuk menyimpan nama fakultas/prodinya (Boleh kosong jika Umum)
-                $table->string('target_peserta')->nullable()->after('kategori_peserta');
-            });
-            return "<h1>✅ SUKSES! Kolom kategori berhasil ditambahkan.</h1>";
-        }
-        return "<h1>ℹ️ Kolom sudah ada. Tidak perlu dijalankan lagi.</h1>";
-    } catch (\Exception $e) {
-        return "<h1>Eror: " . $e->getMessage() . "</h1>";
+    if (!Schema::hasColumn('events', 'kategori_peserta')) {
+        Schema::table('events', function (Blueprint $table) {
+            $table->string('kategori_peserta')->default('umum')->after('description');
+            $table->string('target_peserta')->nullable()->after('kategori_peserta');
+        });
+        return "Kolom kategori ditambahkan.";
     }
+    return "Kolom sudah ada.";
 });

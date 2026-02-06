@@ -1,0 +1,80 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Campus Event",
+        "description": "Dokumentasi API",
+        "contact": {
+            "email": "admin@campusevent.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Server"
+        }
+    ],
+    "paths": {
+        "/api/send-otp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Kirim OTP WhatsApp",
+                "description": "Mengirim kode OTP ke nomor WhatsApp user",
+                "operationId": "40f7591016f0d0a5ce412e71fee1f351",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP Terkirim"
+                    },
+                    "400": {
+                        "description": "Gagal / Nomor Salah"
+                    }
+                }
+            }
+        },
+        "/api/events": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "List Event",
+                "operationId": "7058ab7c89d20c752b6afd6d808f6526",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Events",
+            "description": "Events"
+        }
+    ]
+}

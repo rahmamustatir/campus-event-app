@@ -12,15 +12,15 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'nim',
-    'jurusan',
-    'no_hp',
-    'avatar', // <--- Tambahan
-    'role',
-];
+        'name',
+        'email',
+        'whatsapp',   // <--- Tambahkan ini
+        'password',
+        'role',
+        'otp_code',        // Tambahan opsi (jika pakai create massal)
+        'otp_expires_at',  // Tambahan opsi
+        'is_verified',     // Tambahan opsi
+    ];
 
     protected $hidden = [
         'password',
