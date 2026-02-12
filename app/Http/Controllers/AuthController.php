@@ -53,7 +53,7 @@ class AuthController extends Controller
             $url = 'http://127.0.0.1:3000/send/message';
             
             $response = Http::timeout(10)->withHeaders([
-                'X-Device-Id' => 'c17b2a9b-ecf6-41a1-9893-e934a5ecccda', // Pastikan ID ini sesuai dashboard
+                'X-Device-Id' => 'aef66c96-ac43-4be8-aa16-175825606fa7', // Pastikan ID ini sesuai dashboard
             ])->post($url, [
                 'phone' => $phone,
                 'message' => $message,

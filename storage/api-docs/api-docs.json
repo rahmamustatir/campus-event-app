@@ -20,8 +20,7 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Kirim OTP WhatsApp",
-                "description": "Mengirim kode OTP ke nomor WhatsApp user",
+                "summary": "Kirim OTP via Go-WhatsApp Local",
                 "operationId": "40f7591016f0d0a5ce412e71fee1f351",
                 "requestBody": {
                     "required": true,
@@ -34,7 +33,7 @@
                                 "properties": {
                                     "phone": {
                                         "type": "string",
-                                        "example": "081234567890"
+                                        "example": "08123456789"
                                     }
                                 },
                                 "type": "object"
@@ -44,10 +43,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OTP Terkirim"
+                        "description": "Sukses"
                     },
-                    "400": {
-                        "description": "Gagal / Nomor Salah"
+                    "500": {
+                        "description": "Gagal Koneksi"
                     }
                 }
             }

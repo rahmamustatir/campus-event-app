@@ -38,6 +38,28 @@
                     <p class="text-sm opacity-50">[ Area Kamera Scanner ]</p>
                 </div>
 
+                <div class="max-w-xl mx-auto mb-6">
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
+            <p class="font-bold">Check-In Berhasil!</p>
+            <p>{{ session('success') }}</p>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md" role="alert">
+            <p class="font-bold">Gagal!</p>
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md" role="alert">
+            <p class="font-bold">Peringatan!</p>
+            <p>{{ session('warning') }}</p>
+        </div>
+    @endif
+</div>
                 <form action="{{ route('admin.scan.process') }}" method="POST" class="flex gap-2">
                     @csrf
                     <input type="text" name="ticket_code" placeholder="Atau ketik kode tiket..." class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">

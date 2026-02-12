@@ -5,21 +5,26 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+    use HasRoles;
 
+    /**
+     * Kolom yang boleh diisi secara massal (create/update).
+     */
     protected $fillable = [
         'name',
         'email',
-        'whatsapp',   // <--- Tambahkan ini
+        'whatsapp',       // <--- WAJIB ADA
         'password',
         'role',
-        'otp_code',        // Tambahan opsi (jika pakai create massal)
-        'otp_expires_at',  // Tambahan opsi
-        'is_verified',     // Tambahan opsi
+        'otp_code',       // <--- WAJIB ADA
+        'otp_expires_at', // <--- WAJIB ADA
+        'is_verified',    
     ];
 
     protected $hidden = [
@@ -27,27 +32,29 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /**
+     * Konversi tipe data otomatis.
+     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'otp_expires_at' => 'datetime', // <--- [PENTING] TAMBAHKAN INI!
         ];
     }
 
-    // --- TAMBAHKAN INI ---
-   // Relasi ke Biodata
+    // --- RELASI ---
+
+    // Relasi ke Biodata
     public function biodata()
     {
-        // Pastikan model Biodata ada di folder Models
         return $this->hasOne(Biodata::class);
     }
 
     // Relasi ke Pendaftaran Event
     public function registrations()
     {
-        // Kita pakai alamat lengkap agar pasti ketemu
         return $this->hasMany(\App\Models\Registration::class);
     }
-
 }

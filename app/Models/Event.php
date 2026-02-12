@@ -11,19 +11,18 @@ class Event extends Model
 
     // 1. DAFTAR KOLOM YANG BOLEH DIISI (Wajib update ini agar fitur baru jalan)
     protected $fillable = [
-        'title',            // Judul
-        'description',      // Deskripsi
-        'date',             // Tanggal
-        'time',             // Jam
-        'location',         // Lokasi
-        'quota',            // Kuota Total
-        'price',            // Harga
-        'image',            // Banner
-        
-        // --- KOLOM BARU UNTUK FILTER ---
-        'kategori_peserta', // (umum / fakultas / prodi)
-        'target_peserta',   // (Nama fakultas/prodinya)
-    ];
+    'title',
+    'slug',
+    'kategori_peserta',
+    'target_peserta',
+    'description',
+    'date',
+    'time',
+    'location',
+    'quota',
+    'image', // <--- PASTIKAN INI ADA
+    // 'price', (Ini tadi yang kita hapus, biarkan terhapus/komen)
+];
 
     // 2. RELASI KE DATA PENDAFTAR (PENTING: Jangan dihapus)
     // Fungsi ini dipakai Admin untuk melihat siapa saja yang daftar event ini

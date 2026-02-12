@@ -70,11 +70,7 @@
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Kuota Peserta (Orang)</label>
                                 <input type="number" name="quota" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Harga Tiket (Rp)</label>
-                                <input type="number" name="price" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="0" required>
-                                <p class="text-xs text-gray-500 mt-1">*Isi 0 jika Gratis</p>
-                            </div>
+                            
                         </div>
 
                         <div class="mb-6 border-2 border-dashed border-gray-300 p-4 rounded-lg bg-gray-50 text-center">

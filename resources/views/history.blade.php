@@ -34,10 +34,24 @@
                                     <hr class="my-4 border-gray-100">
                                     
                                     <div class="flex justify-between items-center">
-                                        <span class="text-xs text-gray-400">Didaftar pada: {{ $reg->created_at->format('d M Y') }}</span>
-                                        <a href="{{ route('ticket.download', $reg->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                                            🖨️ Cetak Tiket
-                                        </a>
+                                        <span class="text-xs text-gray-400">
+                                            Didaftar pada: {{ $reg->created_at->format('d M Y') }}
+                                        </span>
+
+                                        <div class="flex gap-2">
+                                            <a href="{{ route('ticket.download', $reg->id) }}" 
+                                               class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 transition ease-in-out duration-150">
+                                                🖨️ Cetak Tiket
+                                            </a>
+
+                                            @if($reg->status == 'checked_in')
+                                                <a href="{{ route('certificate.download', $reg->id) }}" 
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-4 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 active:bg-yellow-700 focus:outline-none focus:border-yellow-700 focus:ring ring-yellow-300 transition ease-in-out duration-150 shadow-md">
+                                                    🏆 Sertifikat
+                                                </a>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
