@@ -1,64 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Daftar Hadir Peserta</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h2 { margin: 0; text-transform: uppercase; }
-        .header p { margin: 5px 0; color: #555; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-        th { background-color: #f0f0f0; text-align: center; font-weight: bold; }
-        .col-no { width: 5%; text-align: center; }
-        .col-ttd { width: 25%; }
+        body { font-family: 'Times New Roman', serif; font-size: 12px; }
+        .kop-surat { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .kop-surat img { width: 80px; float: left; }
+        .kop-surat h2, .kop-surat h3 { margin: 0; padding: 0; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 8px; }
+        th { background-color: #f2f2f2; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>DAFTAR HADIR PESERTA</h2>
-        <p><strong>Event:</strong> {{ $event->title }}</p>
-        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($event->date)->isoFormat('D MMMM Y') }} | <strong>Lokasi:</strong> {{ $event->location }}</p>
+    <div class="kop-surat">
+        <img src="{{ public_path('images/Logo UNU.png') }}" alt="Logo UNU">
+        <h2>UNIVERSITAS NAHDLATUL ULAMA LAMPUNG</h2>
+        <h3>LAPORAN PELAKSANAAN EVENT: {{ strtoupper($event->title) }}</h3>
+        <p>Jl. Lintas Sumatera, Bandar Lampung | Telp: (0721) xxxxx</p>
     </div>
 
+    <p>Berikut adalah daftar kehadiran peserta untuk event <b>{{ $event->title }}</b>:</p>
+    
     <table>
         <thead>
             <tr>
-                <th class="col-no">No</th>
-                <th>Nama Peserta</th>
-                <th>Fakultas / Instansi</th>
-                <th>Status Tiket</th>
-                <th class="col-ttd">Tanda Tangan</th>
+                <th>No</th>
+                <th>Nama Mahasiswa</th>
+                <th>NIM</th>
+                <th>Prodi</th>
+                <th>Tanda Tangan</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($event->registrations as $index => $reg)
+            @foreach($event->registrations as $index => $reg)
             <tr>
-                <td class="col-no">{{ $index + 1 }}</td>
-                <td>
-                    {{ strtoupper($reg->user->name) }}<br>
-                    <small style="color: #666;">{{ $reg->user->email }}</small>
-                </td>
-                <td>
-                    {{ optional($reg->user->biodata)->fakultas ?? '-' }}
-                </td>
-                <td style="text-align: center;">
-                    {{ strtoupper($reg->payment_status) }}
-                </td>
-                <td>
-                    </td>
+                <td style="text-align: center;">{{ $index + 1 }}</td>
+                <td>{{ $reg->user->name }}</td>
+                <td>{{ $reg->user->nim ?? '-' }}</td>
+                <td>{{ $reg->user->prodi ?? '-' }}</td>
+                <td style="height: 40px;"></td>
             </tr>
-            @empty
-            <tr>
-                <td colspan="5" style="text-align: center; padding: 20px;">Belum ada peserta yang mendaftar.</td>
-            </tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
-
-    <div style="margin-top: 30px; text-align: right;">
-        <p>Dicetak pada: {{ date('d-m-Y H:i') }}</p>
-    </div>
 </body>
 </html>

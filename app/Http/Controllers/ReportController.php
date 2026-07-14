@@ -9,31 +9,40 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function index()
+    
+    // Tambahkan fungsi ini di dalam class ReportController
+public function downloadLaporanBulanan() 
+{
+    // Mengambil data event untuk bulan berjalan (Juli 2026)
+    $events = \App\Models\Event::whereMonth('date', now()->month)
+                                ->whereYear('date', now()->year)
+                                ->get();
+    
+    $bulan = now()->translatedFormat('F Y'); // Menggunakan bahasa Indonesia
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.laporan_bulanan', compact('events', 'bulan'));
+    return $pdf->download('Laporan_Event_' . $bulan . '.pdf');
+}
+
+        public function index()
     {
-        // PERBAIKAN: Menggunakan 'date' (bukan event_date)
-        // Kita juga hitung jumlah pendaftar otomatis dengan withCount
         $events = Event::withCount('registrations')
                        ->orderBy('date', 'desc') 
                        ->get();
 
         return view('admin.reports.index', compact('events'));
     }
-    // --- FUNGSI BARU: EXPORT ABSENSI PESERTA ---
-    public function exportParticipants($id)
-    {
-        // 1. Ambil data event beserta peserta yang statusnya 'confirmed' atau 'checked_in'
-        $event = Event::with(['registrations' => function($query) {
-                        $query->whereIn('status', ['confirmed', 'checked_in', 'paid']); // Hanya yang sudah fix ikut
-                    }, 'registrations.user', 'registrations.user.biodata'])
-                    ->findOrFail($id);
 
-        // 2. Load View PDF Absensi
-        // Kita akan buat file view baru khusus untuk ini
-        $pdf = Pdf::loadView('admin.reports.attendance_list', compact('event'))
-                  ->setPaper('a4', 'portrait');
+    public function downloadLaporanEvent($id) {
+    $event = Event::findOrFail($id);
+    $pdf = Pdf::loadView('admin.reports.laporan_event', compact('event'));
+    return $pdf->download('Laporan_Event_' . $event->title . '.pdf');
+}
 
-        // 3. Download
-        return $pdf->download('Absensi - ' . $event->slug . '.pdf');
-    }
+    public function exportParticipants($id) {
+    $event = Event::with(['registrations.user'])->findOrFail($id);
+    // Ini tetap menggunakan attendance_list.blade.php
+    $pdf = Pdf::loadView('admin.reports.attendance_list', compact('event'));
+    return $pdf->download('Daftar_Hadir_' . $event->title . '.pdf');
+}
 }

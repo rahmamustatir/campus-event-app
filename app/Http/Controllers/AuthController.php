@@ -3,87 +3,159 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use OpenApi\Attributes as OA;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\OtpVerification;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
-    #[OA\Post(
-        path: '/api/send-otp',
-        tags: ['Authentication'],
-        summary: 'Kirim OTP via Go-WhatsApp Local',
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                required: ['phone'],
-                properties: [
-                    new OA\Property(property: 'phone', type: 'string', example: '08123456789'),
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(response: 200, description: 'Sukses'),
-            new OA\Response(response: 500, description: 'Gagal Koneksi')
-        ]
-    )]
-    public function sendOtp(Request $request)
+    // =========================================================================
+    // 1. TAMPILAN ANTARMUKA (VIEW)
+    // =========================================================================
+    public function loginView()
     {
-        // 1. Validasi
-        $request->validate(['phone' => 'required']);
+        return view('auth.login');
+    }
 
-        // 2. Format Nomor (08 -> 628)
-        $phone = $request->phone;
-        if (substr($phone, 0, 1) == '0') {
-            $phone = '62' . substr($phone, 1);
+    public function registerView()
+    {
+        return view('auth.register');
+    }
+
+    public function otpView()
+    {
+        return view('auth.otp');
+    }
+
+    // =========================================================================
+    // 2. LOGIKA PROSES (CONTROLLER)
+    // =========================================================================
+
+    /**
+     * Proses Registrasi Akun Mahasiswa
+     */
+    public function registerProcess(Request $request)
+    {
+        // 1. Validasi Input
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'whatsapp_number' => 'required|string|unique:users,whatsapp_number',
+            'password' => 'required|min:6|confirmed'
+        ]);
+
+        // 2. Simpan Data User (Default: mahasiswa, belum terverifikasi)
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'whatsapp_number' => $request->whatsapp_number,
+            'password' => Hash::make($request->password),
+            'role' => 'mahasiswa',
+            'is_verified' => false,
+        ]);
+
+        // 3. Generate 6 Digit OTP Unik
+        $otpCode = rand(100000, 999999);
+
+        // 4. Simpan OTP ke tabel otp_verifications (Berlaku 5 menit)
+        OtpVerification::create([
+            'user_id' => $user->id,
+            'otp_code' => $otpCode,
+            'expired_at' => Carbon::now()->addMinutes(5),
+            'is_used' => false,
+        ]);
+
+        // 5. TODO: Integrasi WhatsApp API Gateway (Fonnte/Wablas/dsb)
+        // Di sini nantinya kamu letakkan script CURL untuk mengirim $otpCode ke $request->whatsapp_number
+        // Contoh Logika Semu: WhatsAppAPI::send($user->whatsapp_number, "Kode OTP Campus Event Anda: " . $otpCode);
+
+        // 6. Redirect ke halaman verifikasi OTP
+        return redirect()->route('otp.view')->with('success', 'Akun berhasil dibuat. Silakan periksa WhatsApp Anda untuk kode OTP.');
+    }
+
+    /**
+     * Proses Verifikasi OTP
+     */
+    public function otpProcess(Request $request)
+    {
+        $request->validate([
+            'otp_code' => 'required|numeric|digits:6'
+        ]);
+
+        // Cari OTP di database yang belum kadaluarsa dan belum dipakai
+        $otp = OtpVerification::where('otp_code', $request->otp_code)
+            ->where('is_used', false)
+            ->where('expired_at', '>=', Carbon::now())
+            ->first();
+
+        if (!$otp) {
+            return back()->withErrors(['otp_code' => 'Kode OTP tidak valid atau sudah kadaluarsa.']);
         }
-        // Hapus suffix @s.whatsapp.net jika ada (biar bersih)
-        $phone = str_replace('@s.whatsapp.net', '', $phone);
-        // Tambahkan lagi (wajib untuk library ini)
-        $phone = $phone . '@s.whatsapp.net';
 
-        // 3. Generate OTP
-        $otp = rand(100000, 999999);
-        $message = "Kode OTP Anda: *{$otp}*";
+        // Jika Valid: Update status OTP & User
+        $otp->update(['is_used' => true]);
+        
+        $user = User::find($otp->user_id);
+        $user->update(['is_verified' => true]);
 
-        try {
-            // ====================================================
-            // PERBAIKAN URL & DEBUG MODE
-            // Gunakan IP 127.0.0.1 dan endpoint /message/send-text
-            // ====================================================
-            $url = 'http://127.0.0.1:3000/send/message';
-            
-            $response = Http::timeout(10)->withHeaders([
-                'X-Device-Id' => 'aef66c96-ac43-4be8-aa16-175825606fa7', // Pastikan ID ini sesuai dashboard
-            ])->post($url, [
-                'phone' => $phone,
-                'message' => $message,
-            ]);
+        return redirect()->route('login')->with('success', 'Verifikasi berhasil! Silakan Login.');
+    }
 
-            // Cek Response
-            if ($response->successful()) {
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'OTP Terkirim ke WhatsApp!',
-                    'data' => $response->json(),
-                    'debug_otp' => $otp
-                ]);
-            } else {
-                // GAGAL: Tampilkan isi error aslinya (walaupun HTML)
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Gagal mengirim WA (Server Menolak).',
-                    'http_status' => $response->status(),
-                    'raw_response' => $response->body() // <--- Ini akan menampilkan alasan errornya
-                ], 500);
+    /**
+     * Proses Login & Redirect Berdasarkan Role
+     */
+    public function loginProcess(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        // Coba Login
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+
+            // Cek apakah akun sudah diverifikasi (kecuali Super Admin)
+            if (!$user->is_verified && $user->role !== 'super_admin') {
+                Auth::logout();
+                return redirect()->route('login')->withErrors(['email' => 'Akun belum diverifikasi OTP.']);
             }
 
-        } catch (\Exception $e) {
-            // ERROR KONEKSI: Tampilkan detail errornya
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal koneksi ke Go-WhatsApp (Cek Port 3000).',
-                'error_detail' => $e->getMessage()
-            ], 500);
+            // PENGALIHAN STRICT (Strict Segregation)
+            switch ($user->role) {
+                case 'super_admin':
+                    return redirect()->route('superadmin.dashboard');
+                case 'biro_akademik':
+                    return redirect()->route('biro.dashboard');
+                case 'prodi':
+                    return redirect()->route('prodi.dashboard');
+                case 'admin': // Panitia Event
+                    return redirect()->route('admin.dashboard');
+                case 'mahasiswa':
+                    return redirect()->route('mahasiswa.dashboard');
+                default:
+                    Auth::logout();
+                    return redirect()->route('login')->withErrors(['email' => 'Role tidak dikenali.']);
+            }
         }
+
+        return back()->withErrors([
+            'email' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+        ])->onlyInput('email');
+    }
+
+    /**
+     * Proses Logout
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect()->route('login');
     }
 }

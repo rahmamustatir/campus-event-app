@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Ini agar kita bisa pakai kode 'role:admin' di routes nanti
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
         // 2. Setting CSRF (Keamanan Form)

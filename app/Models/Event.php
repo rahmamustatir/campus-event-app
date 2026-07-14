@@ -2,43 +2,46 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Event extends Model
 {
     use HasFactory;
 
-    // 1. DAFTAR KOLOM YANG BOLEH DIISI (Wajib update ini agar fitur baru jalan)
     protected $fillable = [
-    'title',
-    'slug',
-    'kategori_peserta',
-    'target_peserta',
-    'description',
-    'date',
-    'time',
-    'location',
-    'quota',
-    'image', // <--- PASTIKAN INI ADA
-    // 'price', (Ini tadi yang kita hapus, biarkan terhapus/komen)
-];
+        'title', 
+        'description', 
+        'date', 
+        'location', 
+        'quota', 
+        'quota_tersedia', 
+        'status',
+        'category_id',
+        'time_start',
+    ];
 
-    // 2. RELASI KE DATA PENDAFTAR (PENTING: Jangan dihapus)
-    // Fungsi ini dipakai Admin untuk melihat siapa saja yang daftar event ini
-    public function registrations()
+    protected $casts = [
+        'date' => 'date',
+    ];
+
+    // MASUKKAN DI SINI:
+    protected static function booted()
     {
-        return $this->hasMany(Registration::class);
+        static::creating(function ($event) {
+            // Ini akan otomatis mengisi quota_tersedia 
+            // dengan nilai yang sama dengan quota saat pertama kali dibuat
+            $event->quota_tersedia = $event->quota;
+        });
     }
 
-    // 3. LOGIKA SISA KUOTA (PENTING: Jangan dihapus)
-    // Fungsi ini dipakai saat Mahasiswa mau daftar. Kalau dihapus, sistem kuota error.
-    public function sisaKuota()
-    {
-        // Hitung berapa orang yang sudah daftar (status confirmed)
-        $terdaftar = $this->registrations()->where('status', 'confirmed')->count();
-        
-        // Kembalikan sisa kursi (Total Kuota - Yang Sudah Daftar)
-        return $this->quota - $terdaftar;
-    }
+public function registrations()
+{
+    return $this->hasMany(Registration::class);
+}
+
+public function sisaKuota()
+{
+    return $this->quota_tersedia;
+}
 }

@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     public function index()
     {
-        // Menampilkan daftar user
-        $users = User::with('biodata')
-                     ->where('usertype', '!=', 'admin')
-                     ->latest()
-                     ->paginate(5);
-
-        return view('admin.users.index', compact('users'));
+        // Pastikan model User sudah di-import di bagian atas file
+        $mahasiswa = User::where('role', 'mahasiswa')->get();
+        return view('admin.users.index', compact('mahasiswa'));
     }
 
     // FUNGSI MENAMPILKAN DETAIL MAHASISWA
@@ -29,7 +25,24 @@ class UserController extends Controller
         // Arahkan ke folder 'users', bukan 'events'
         // Kita akan buat file show.blade.php di folder users setelah ini.
         return view('admin.users.show', compact('user'));
-    }
+            }
+    public function store(Request $request) {
+    $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|min:6',
+    ]);
+
+    \App\Models\User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => \Hash::make($request->password), // Password di-enkripsi
+        'role' => 'prodi',
+    ]);
+
+    return redirect()->back()->with('success', 'Akun Prodi berhasil dibuat!');
+}
+
 
     // ... (kode sebelumnya)
 

@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'laravel/laravel',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '87fd2372cb7257cd81920558f3d1df619b1f93a2',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'reference' => NULL,
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'barryvdh/laravel-dompdf' => array(
-            'pretty_version' => 'v3.1.1',
-            'version' => '3.1.1.0',
-            'reference' => '8e71b99fc53bb8eb77f316c3c452dd74ab7cb25d',
+            'pretty_version' => 'v3.1.2',
+            'version' => '3.1.2.0',
+            'reference' => 'ee3b72b19ccdf57d0243116ecb2b90261344dedc',
             'type' => 'library',
             'install_path' => __DIR__ . '/../barryvdh/laravel-dompdf',
             'aliases' => array(),
@@ -497,9 +497,9 @@
             'dev_requirement' => false,
         ),
         'laravel/laravel' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '87fd2372cb7257cd81920558f3d1df619b1f93a2',
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => NULL,
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

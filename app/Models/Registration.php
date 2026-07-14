@@ -9,8 +9,7 @@ class Registration extends Model
 {
     use HasFactory;
 
-    // --- BAGIAN INI YANG MEMBUAT ERROR SEBELUMNYA ---
-    // Kita harus mengizinkan (fillable) kolom ini agar bisa diisi oleh Controller baru
+    
     protected $fillable = [
         'user_id',
         'event_id',

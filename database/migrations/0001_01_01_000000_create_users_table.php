@@ -6,40 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // 1. Tabel Master Akun
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            
-            // --- MODIFIKASI DIMULAI DARI SINI ---
-            
-            // Role untuk membedakan Admin (Panitia) dan Student (Peserta)
-            $table->enum('role', ['admin', 'student'])->default('student');
-            
-            // Data khusus Mahasiswa (Nullable karena Admin tidak punya NIM)
-            $table->string('nim', 20)->nullable()->unique();
-            $table->string('major')->nullable(); // Jurusan
-            $table->string('phone', 15)->nullable(); // No HP/WA
-            
-            // ------------------------------------
-
-            $table->rememberToken();
+            $table->string('name', 255);
+            $table->string('email', 255)->unique();
+            $table->string('password', 255);
+            $table->string('whatsapp_number', 20)->unique();
+            $table->enum('role', ['super_admin', 'admin', 'mahasiswa', 'biro_akademik', 'prodi'])->default('mahasiswa');
+            $table->boolean('is_verified')->default(false);
             $table->timestamps();
         });
 
+        // 2. Tabel Bawaan Laravel untuk Reset Password
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // 3. Tabel Bawaan Laravel untuk Manajemen Sesi (Yang tadi hilang)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -50,9 +38,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
