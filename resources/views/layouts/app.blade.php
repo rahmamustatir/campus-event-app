@@ -7,6 +7,7 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
         <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 flex">
@@ -18,9 +19,9 @@
             <div class="flex-1">
                 @include('layouts.navigation')
 
-                <main class="p-6">
-                    {{ $slot }}
-                </main>
+                <main class="w-full py-6 px-4 sm:px-6 lg:px-8">
+    {{ $slot }}
+</main>
             </div>
             
         </div>

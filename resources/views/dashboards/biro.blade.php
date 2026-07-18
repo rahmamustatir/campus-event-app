@@ -8,58 +8,53 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <!-- NAVBAR -->
     <nav class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <img src="{{ asset('logo.png') }}" class="h-10" alt="Logo">
             <div>
                 <h1 class="text-xl font-bold text-blue-800">CAMPUSEVENT</h1>
-                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">MANAGEMENT SYSTEM</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Management System</p>
             </div>
         </div>
-
-        <div class="flex gap-8 text-sm font-semibold text-gray-700">
-            <a href="#" class="text-blue-600 border-b-2 border-blue-600 pb-1">Dashboard</a>
+        
+        <div class="flex gap-8 text-md font-bold text-gray-800">
+            <a href="#" class="hover:text-blue-600 transition underline decoration-2">Dashboard</a>
             <a href="#" class="hover:text-blue-600 transition">Validasi Event</a>
             <a href="#" class="hover:text-blue-600 transition">Data Mahasiswa</a>
             <a href="#" class="hover:text-blue-600 transition">Laporan</a>
         </div>
 
-        <div class="flex items-center gap-4">
-            <div class="text-right">
-                <p class="text-sm font-bold text-gray-800">{{ $user->name }}</p>
-                <p class="text-[10px] text-blue-600 font-bold uppercase">Biro Akademik</p>
-            </div>
-            <form method="POST" action="{{ route('logout') }}">
+        <div class="flex items-center gap-4 text-sm font-bold text-gray-800">
+            <span>Biro Akademik</span>
+            <span class="text-gray-300">|</span>
+            <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="text-red-600 font-bold text-sm hover:underline">Logout</button>
+                <button type="submit" class="text-red-600 hover:underline">Logout</button>
             </form>
         </div>
     </nav>
 
-    <!-- KONTEN UTAMA (DI SINI STATISTIK BERADA) -->
-    <main class="p-8 max-w-7xl mx-auto">
+    <div class="p-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Pengawas: Biro Akademik</h2>
-
+        
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-                <p class="text-xs font-bold text-gray-500 uppercase">Total Pendaftaran Masuk</p>
-                <p class="text-4xl font-bold mt-4 text-blue-800">{{ $totalPendaftaran ?? 0 }}</p>
+            <div class="bg-white p-6 border border-gray-200 shadow-sm rounded-lg">
+                <p class="text-gray-500 font-bold uppercase text-xs">Total</p>
+                <h3 class="font-bold text-lg text-gray-800">Pendaftaran Masuk</h3>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-                <p class="text-xs font-bold text-gray-500 uppercase">Total Pengajuan Event</p>
-                <p class="text-4xl font-bold mt-4 text-blue-800">{{ $totalEvent ?? 0 }}</p>
+            <div class="bg-white p-6 border border-gray-200 shadow-sm rounded-lg">
+                <p class="text-gray-500 font-bold uppercase text-xs">Total</p>
+                <h3 class="font-bold text-lg text-gray-800">Pengajuan Event</h3>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-                <p class="text-xs font-bold text-gray-500 uppercase mb-2">Rating Event</p>
-                <p class="text-2xl text-yellow-500">★★★★</p>
+            <div class="bg-white p-6 border border-gray-200 shadow-sm rounded-lg">
+                <p class="text-gray-500 font-bold uppercase text-xs">Rating Event</p>
+                <h3 class="font-bold text-lg text-gray-800">⭐⭐⭐⭐</h3>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-                <p class="text-xs font-bold text-gray-500 uppercase">Ringkasan Aktivitas</p>
-                <p class="text-lg font-bold mt-4 text-green-600">Aktif</p>
+            <div class="bg-white p-6 border border-gray-200 shadow-sm rounded-lg">
+                <p class="text-gray-500 font-bold uppercase text-xs">Ringkasan</p>
+                <h3 class="font-bold text-lg text-gray-800">Aktivitas</h3>
             </div>
         </div>
-    </main>
-
+    </div>
 </body>
 </html>

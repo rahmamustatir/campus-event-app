@@ -125,3 +125,4 @@ class RegistrationController extends Controller
         return back()->with('success', 'Check-Out Berhasil!');
     }
 }
+}

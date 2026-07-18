@@ -47,6 +47,26 @@
             @endif
         </div>
 
+        <!-- TAMBAHAN INPUT BARU DI SINI -->
+        <div>
+            <x-input-label for="nim" :value="__('NIM')" />
+            <x-text-input id="nim" name="nim" type="text" class="mt-1 block w-full" :value="old('nim', $user->nim)" required />
+            <x-input-error class="mt-2" :messages="$errors->get('nim')" />
+        </div>
+
+        <div>
+            <x-input-label for="prodi_name" :value="__('Program Studi')" />
+            <x-text-input id="prodi_name" name="prodi_name" type="text" class="mt-1 block w-full" :value="old('prodi_name', $user->prodi_name)" required />
+            <x-input-error class="mt-2" :messages="$errors->get('prodi_name')" />
+        </div>
+
+        <div>
+            <x-input-label for="whatsapp" :value="__('WhatsApp')" />
+            <x-text-input id="whatsapp" name="whatsapp" type="text" class="mt-1 block w-full" :value="old('whatsapp', $user->whatsapp)" required />
+            <x-input-error class="mt-2" :messages="$errors->get('whatsapp')" />
+        </div>
+        <!-- AKHIR TAMBAHAN -->
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

@@ -47,7 +47,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
         Route::get('/scan', [ScanController::class, 'index'])->name('admin.scan.index');
         Route::post('/scan/verify', [ScanController::class, 'verify'])->name('admin.scan.verify');
-        
+        Route::post('/events/{id}/ajukan', [EventController::class, 'updateStatus'])->name('admin.events.ajukan');
+
         // Rute Laporan Admin
         Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
         Route::get('/reports/laporan/{id}', [ReportController::class, 'downloadLaporanEvent'])->name('admin.reports.laporan');
@@ -59,9 +60,10 @@ Route::middleware(['auth'])->group(function () {
     // E. Mahasiswa
  // RUTE MAHASISWA
     Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
+    // Rute ini akan membuat /mahasiswa/mahasiswa/dashboard
     Route::get('/mahasiswa/dashboard', [App\Http\Controllers\DashboardMahasiswaController::class, 'index'])->name('mahasiswa.dashboard');
-    Route::get('/mahasiswa/explore', [App\Http\Controllers\DashboardMahasiswaController::class, 'explore'])->name('explore');
+    Route::get('/mahasiswa/mahasiswa/explore', [DashboardMahasiswaController::class, 'explore'])->name('explore');
     Route::get('/mahasiswa/history', [App\Http\Controllers\RegistrationController::class, 'history'])->name('history');
-    Route::post('/mahasiswa/daftar/{id}', [App\Http\Controllers\DashboardMahasiswaController::class, 'daftarEvent'])->name('mahasiswa.daftar');
+    Route::get('/mahasiswa/biodata', [App\Http\Controllers\DashboardMahasiswaController::class, 'biodata'])->name('biodata');
     });
 });

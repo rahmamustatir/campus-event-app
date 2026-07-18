@@ -17,15 +17,17 @@ class User extends Authenticatable
      * Kolom yang boleh diisi secara massal (create/update).
      */
     protected $fillable = [
-        'name',
-        'email',
-        'whatsapp',       // <--- WAJIB ADA
-        'password',
-        'role',
-        'otp_code',       // <--- WAJIB ADA
-        'otp_expires_at', // <--- WAJIB ADA
-        'is_verified',    
-    ];
+    'name',
+    'email',
+    'password',
+    'whatsapp',
+    'role',
+    'otp_code',
+    'otp_expires_at',
+    'is_verified',
+    'nim',           // Tambahkan ini
+    'prodi_name',    // Tambahkan ini
+];
 
     protected $hidden = [
         'password',

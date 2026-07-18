@@ -4,11 +4,13 @@ use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardBiroController extends Controller {
-    public function index() {
-        $user = Auth::user();
-        $totalReg = \App\Models\Registration::count();
-        $eventPending = Event::where('status', 'pending')->count();
-        $eventApproved = Event::where('status', 'approved')->count();
-        return view('dashboards.biro', compact('user', 'totalReg', 'eventPending', 'eventApproved'));
-    }
+    public function index() 
+{
+    // Mengambil jumlah event yang perlu diverifikasi biro
+    $pending_events = \App\Models\Event::where('status', 'pending')->count();
+    
+    return view('dashboards.biro', [
+        'pending_events' => $pending_events
+    ]);
+}
 }

@@ -20,11 +20,11 @@
 
     <!-- 2. Tengah: Menu (Menggunakan gap agar rapi) -->
     <div class="flex items-center gap-10 text-sm font-semibold text-gray-700">
-        <a href="#" class="text-black border-b-2 border-black pb-1">Dashboard</a>
-        <a href="#" class="hover:text-gray-900 transition">Jelajah Event</a>
-        <a href="#" class="hover:text-gray-900 transition">Riwayat</a>
-        <a href="#" class="hover:text-black transition">Biodata</a>
-        <a href="#" class="hover:text-black transition">Bantuan</a>
+        <a href="{{ route('mahasiswa.dashboard') }}" class="text-black border-b-2 border-black pb-1">Dashboard</a>
+        <a href="{{ route('explore') }}" class="hover:text-gray-900 transition">Jelajah Event</a>
+        <a href="{{ route('history') }}" class="hover:text-gray-900 transition">Riwayat</a>
+        <a href="{{ route('biodata') }}" class="hover:text-gray-900 transition">Biodata</a>
+        
     </div>
 
     <!-- 3. Kanan: Profil & Logout -->

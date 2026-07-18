@@ -1,4 +1,9 @@
 <x-app-layout>
+    <div style="background: red; padding: 20px; position: fixed; top: 100px; left: 0; z-index: 9999;">
+    <a href="{{ route('mahasiswa.dashboard') }}" style="color: white; font-weight: bold; font-size: 20px;">
+        KLIK SAYA (TES NAVIGASI)
+    </a>
+</div>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Jelajah Event Kampus</h2>

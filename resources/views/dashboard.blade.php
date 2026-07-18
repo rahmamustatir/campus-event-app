@@ -25,11 +25,13 @@
                             Temukan event inspiratif di kampus, asah potensimu, dan jadilah versi terbaik dari dirimu hari ini!"
                         </p>
                         
-                        <div class="flex flex-wrap justify-center md:justify-start gap-4">
-                            <a href="{{ route('explore') }}" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 font-bold py-3 px-6 rounded-lg shadow-lg transform transition hover:-translate-y-1">
-                                🚀 Mulai Jelajah Event
-                            </a>
-                        </div>
+                        <<div class="relative z-20">
+    <a href="/mahasiswa/mahasiswa/explore" 
+       onclick="console.log('Tombol diklik!');"
+       class="bg-yellow-400 text-white px-6 py-2 rounded-lg hover:bg-yellow-500 cursor-pointer block w-fit">
+       🚀 Mulai Jelajah Event
+    </a>
+</div>
                     </div>
 
                     <div class="hidden md:block">

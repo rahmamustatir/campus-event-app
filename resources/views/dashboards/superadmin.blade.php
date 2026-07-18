@@ -2,80 +2,73 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard Super Admin</title>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <nav class="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between">
+    <nav class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <img src="{{ asset('logo.png') }}" class="h-10" alt="Logo">
             <div>
                 <h1 class="text-xl font-bold text-blue-800">CAMPUSEVENT</h1>
-                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">MANAGEMENT SYSTEM</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Management System</p>
             </div>
         </div>
-
-        <div class="flex gap-6 text-sm font-semibold text-gray-700">
-            <a href="#" class="text-blue-600 border-b-2 border-blue-600 pb-1">Dashboard</a>
-            <a href="#" class="hover:text-blue-600">User Management</a>
-            <a href="#" class="hover:text-blue-600">System Config</a>
-            <a href="#" class="hover:text-blue-600">Logs</a>
-            <a href="#" class="hover:text-blue-600">Reports</a>
+        
+        <div class="flex gap-8 text-md font-bold text-gray-800">
+            <a href="#" class="hover:text-blue-600 transition">User Management</a>
+            <a href="#" class="hover:text-blue-600 transition">System Config</a>
+            <a href="#" class="hover:text-blue-600 transition">Logs</a>
+            <a href="#" class="hover:text-blue-600 transition">Reports</a>
         </div>
-        <div class="flex items-center gap-4">
-    <div class="text-right">
-        <p class="font-bold text-gray-800 uppercase text-sm">SUPER ADMIN</p>
-    </div>
-    <!-- Tombol Logout yang hilang -->
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit" class="text-red-600 font-bold text-sm hover:underline">Logout</button>
-    </form>
-</div>
+
+        <div class="flex items-center gap-4 text-sm font-bold text-gray-800">
+            <span>SUPER ADMIN</span>
+            <span class="text-gray-300">|</span>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="text-red-600 hover:underline">Logout</button>
+            </form>
+        </div>
     </nav>
 
-    <main class="p-8 max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 class="font-bold text-gray-700 mb-4">Distribusi Pengguna</h3>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-xs font-bold mb-1"><span>Mahasiswa</span><span>70%</span></div>
-                        <div class="w-full bg-gray-200 h-3 rounded"><div class="bg-green-500 h-3 rounded" style="width: 70%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs font-bold mb-1"><span>Admin</span><span>20%</span></div>
-                        <div class="w-full bg-gray-200 h-3 rounded"><div class="bg-blue-500 h-3 rounded" style="width: 20%"></div></div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-blue-900 p-6 rounded-lg shadow-sm text-white flex flex-col justify-center">
-                <p class="text-sm opacity-75">Total Pengguna Terdaftar</p>
-                <p class="text-5xl font-bold">{{ $allUsers->count() }}</p>
+    <div class="p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Kontrol Sistem: Super Admin</h2>
+        
+        <div class="bg-white border border-gray-200 p-6 shadow-sm">
+            <h3 class="font-bold text-md mb-4 uppercase text-gray-700">TABEL MATRIKS MANAJEMEN PENGGUNA & HAK AKSES (RBAC)</h3>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr class="text-left">
+                            <th class="px-6 py-3 border-b text-sm font-bold uppercase">User ID/Name</th>
+                            <th class="px-6 py-3 border-b text-sm font-bold uppercase">Faculty/Unit</th>
+                            <th class="px-6 py-3 border-b text-sm font-bold uppercase">Current Role</th>
+                            <th class="px-6 py-3 border-b text-sm font-bold uppercase">Details/Event</th>
+                            <th class="px-6 py-3 border-b text-sm font-bold uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+    @foreach($users as $user)
+    <tr>
+        <td class="px-6 py-4 text-sm">{{ $user->name }}</td>
+        <td class="px-6 py-4 text-sm">UNU Lampung</td>
+        <td class="px-6 py-4 text-sm">{{ $user->role }}</td>
+        
+        <td class="px-6 py-4 text-sm">{{ $user->details }}</td>
+        
+        <td class="px-6 py-4 text-sm">
+            <a href="{{ url('/admin/users/'.$user->id.'/edit') }}" class="text-blue-600 font-bold hover:underline">Edit</a>
+        </td>
+    </tr>
+    @endforeach
+</tbody>
+                </table>
             </div>
         </div>
-
-        <div class="bg-white rounded-lg shadow-sm border">
-            <div class="p-4 border-b font-bold text-gray-700">Daftar Pengguna & Hak Akses</div>
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-gray-500">
-                    <tr>
-                        <th class="py-3 px-6">Name</th>
-                        <th class="py-3 px-6">Role</th>
-                        <th class="py-3 px-6">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    @foreach($allUsers as $u)
-                    <tr>
-                        <td class="py-3 px-6">{{ $u->name }}</td>
-                        <td class="py-3 px-6 uppercase font-bold text-blue-600">{{ $u->role }}</td>
-                        <td class="py-3 px-6">{{ $u->is_verified ? 'Aktif' : 'Pending' }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </main>
+    </div>
 </body>
 </html>

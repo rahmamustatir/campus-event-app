@@ -39,14 +39,23 @@
                 <input type="text" name="location" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none" required>
             </div>
 
-            <div class="flex gap-4">
-                <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                    Simpan Event
-                </button>
-                <a href="{{ route('admin.events.index') }}" class="text-gray-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
-                    Batal
-                </a>
-            </div>
+            <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700">Upload Proposal (PDF)</label>
+        <input type="file" name="proposal" accept=".pdf" class="mt-1 block w-full border-gray-300 rounded-md" required>
+        <p class="text-xs text-gray-500 mt-1">Format file harus PDF (Max 2MB)</p>
+    </div>
+
+            <div class="flex items-center gap-4 mt-6">
+    <!-- Tombol Simpan -->
+    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200">
+        Simpan & Ajukan
+    </button>
+
+    <!-- Tombol Batal -->
+    <a href="{{ route('admin.events.index') }}" class="text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition duration-200">
+        Batal
+    </a>
+</div>
         </form>
     </div>
 
